@@ -68,16 +68,6 @@ echo "-- Install CM and MariaDB"
 ## CM 7
 wget https://archive.cloudera.com/cm7/7.1.3/redhat7/yum/cloudera-manager-trial.repo -P /etc/yum.repos.d/
 
-## MariaDB 10.1
-cat - >/etc/yum.repos.d/MariaDB.repo <<EOF
-[mariadb]
-name = MariaDB
-baseurl = http://yum.mariadb.org/10.1/centos7-amd64
-gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
-gpgcheck=1
-EOF
-
-
 yum clean all
 rm -rf /var/cache/yum/
 yum repolist
@@ -85,29 +75,32 @@ yum repolist
 ## CM
 yum install -y cloudera-manager-agent cloudera-manager-daemons cloudera-manager-server
 
-## MariaDB
-yum install -y MariaDB-server MariaDB-client
-cat conf/mariadb.config > /etc/my.cnf
+## PostgreSQL
+yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+yum install -y postgresql10-server
+sed -i '1 i\host all all 127.0.0.1/32 md5' /var/lib/pgsql/10/data/pg_hba.conf
+echo "listen_addresses = '0.0.0.0'" >> /var/lib/pgsql/10/data/postgres.conf
+/usr/pgsql-10/bin/postgresql-10-setup initdb
+systemctl enable postgresql-10
+systemctl start postgresql-10
 
-echo "--Enable and start MariaDB"
-systemctl enable mariadb
-systemctl start mariadb
 
-echo "-- Install JDBC connector"
-wget https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-5.1.46.tar.gz -P ~
-tar zxf ~/mysql-connector-java-5.1.46.tar.gz -C ~
-mkdir -p /usr/share/java/
-cp ~/mysql-connector-java-5.1.46/mysql-connector-java-5.1.46-bin.jar /usr/share/java/mysql-connector-java.jar
-rm -rf ~/mysql-connector-java-5.1.46*
+#echo "-- Install JDBC connector"
+#wget https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-5.1.46.tar.gz -P ~
+#tar zxf ~/mysql-connector-java-5.1.46.tar.gz -C ~
+#mkdir -p /usr/share/java/
+#cp ~/mysql-connector-java-5.1.46/mysql-connector-java-5.1.46-bin.jar /usr/share/java/mysql-connector-java.jar
+#rm -rf ~/mysql-connector-java-5.1.46*
 
 echo "-- Create DBs required by CM"
-mysql -u root < scripts/create_db.sql
+#mysql -u root < scripts/create_db.sql
+sudo -u postgres psql < ./scripts/pgsql_create_db.sql
 
-echo "-- Secure MariaDB"
-mysql -u root < scripts/secure_mariadb.sql
+#echo "-- Secure MariaDB"
+#mysql -u root < scripts/secure_mariadb.sql
 
 echo "-- Prepare CM database 'scm'"
-/opt/cloudera/cm/schema/scm_prepare_database.sh mysql scm scm cloudera
+/opt/cloudera/cm/schema/scm_prepare_database.sh postgres scm scm cloudera
 
 ## PostgreSQL
 #yum install -y postgresql-server python-pip
@@ -122,22 +115,24 @@ echo "-- Prepare CM database 'scm'"
 
 
 ## PostgreSQL see: https://www.postgresql.org/download/linux/redhat/
-yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
-yum install -y postgresql96
-yum install -y postgresql96-server
+#yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+#yum install -y postgresql96
+#yum install -y postgresql96-server
+#pip install psycopg2==2.7.5 --ignore-installed
+
+yum -y install python-pip
+pip install --upgrade pip
 pip install psycopg2==2.7.5 --ignore-installed
-
 echo 'LC_ALL="en_US.UTF-8"' >> /etc/locale.conf
-/usr/pgsql-9.6/bin/postgresql96-setup initdb
 
-cat conf/pg_hba.conf > /var/lib/pgsql/9.6/data/pg_hba.conf
-cat conf/postgresql.conf > /var/lib/pgsql/9.6/data/postgresql.conf
-
-echo "--Enable and start pgsql"
-systemctl enable postgresql-9.6
-systemctl start postgresql-9.6
-
-echo "-- Create DBs required by CM"
+#cat conf/pg_hba.conf > /var/lib/pgsql/9.6/data/pg_hba.conf
+#cat conf/postgresql.conf > /var/lib/pgsql/9.6/data/postgresql.conf
+#
+#echo "--Enable and start pgsql"
+#systemctl enable postgresql-9.6
+#systemctl start postgresql-9.6
+#
+#echo "-- Create DBs required by CM"
 sudo -u postgres psql <<EOF 
 CREATE DATABASE ranger;
 CREATE USER ranger WITH PASSWORD 'cloudera';
@@ -159,7 +154,7 @@ systemctl restart sshd
 echo "-- Start CM, it takes about 2 minutes to be ready"
 systemctl start cloudera-scm-server
 
-while [ `curl -s -X GET -u "admin:admin"  http://localhost:7180/api/version` -z ] ;
+while [[ -z `curl -s -X GET -u "admin:admin" http://localhost:7180/api/version` ] ;
     do
     echo "waiting 10s for CM to come up..";
     sleep 10;

@@ -78,9 +78,9 @@ yum install -y cloudera-manager-agent cloudera-manager-daemons cloudera-manager-
 ## PostgreSQL
 yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
 yum install -y postgresql10-server
+/usr/pgsql-10/bin/postgresql-10-setup initdb
 sed -i '1 i\host all all 127.0.0.1/32 md5' /var/lib/pgsql/10/data/pg_hba.conf
 echo "listen_addresses = '0.0.0.0'" >> /var/lib/pgsql/10/data/postgres.conf
-/usr/pgsql-10/bin/postgresql-10-setup initdb
 systemctl enable postgresql-10
 systemctl start postgresql-10
 
@@ -100,7 +100,7 @@ sudo -u postgres psql < ./scripts/pgsql_create_db.sql
 #mysql -u root < scripts/secure_mariadb.sql
 
 echo "-- Prepare CM database 'scm'"
-/opt/cloudera/cm/schema/scm_prepare_database.sh postgres scm scm cloudera
+/opt/cloudera/cm/schema/scm_prepare_database.sh postgresql scm scm cloudera
 
 ## PostgreSQL
 #yum install -y postgresql-server python-pip
@@ -154,7 +154,7 @@ systemctl restart sshd
 echo "-- Start CM, it takes about 2 minutes to be ready"
 systemctl start cloudera-scm-server
 
-while [[ -z `curl -s -X GET -u "admin:admin" http://localhost:7180/api/version` ] ;
+while [[ -z `curl -s -X GET -u "admin:admin" http://localhost:7180/api/version` ]] ;
     do
     echo "waiting 10s for CM to come up..";
     sleep 10;

@@ -11,6 +11,10 @@ echo  "vm.swappiness = 1" >> /etc/sysctl.conf
 sysctl vm.swappiness=1
 timedatectl set-timezone UTC
 
+yum install -y chrony
+systemctl start chronyd
+systemctl enable chronyd
+
 echo "-- Install Java OpenJDK8 and other tools"
 yum install -y java-1.8.0-openjdk-devel vim wget curl git bind-utils rng-tools
 yum install -y epel-release

@@ -116,28 +116,12 @@ mysql -u root < scripts/secure_mariadb.sql
 echo "-- Prepare CM database 'scm'"
 /opt/cloudera/cm/schema/scm_prepare_database.sh mysql scm scm cloudera
 
-## PostgreSQL
-#yum install -y postgresql-server python-pip
-#pip install psycopg2==2.7.5 --ignore-installed
-#echo 'LC_ALL="en_US.UTF-8"' >> /etc/locale.conf
-#sudo su -l postgres -c "postgresql-setup initdb"
-#cat conf/pg_hba.conf > /var/lib/pgsql/data/pg_hba.conf
-#cat conf/postgresql.conf > /var/lib/pgsql/data/postgresql.conf
-#echo "--Enable and start pgsql"
-#systemctl enable postgresql
-#systemctl restart postgresql
-
 
 ## PostgreSQL see: https://www.postgresql.org/download/linux/redhat/
 # yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
-
 yum install -y https://yum.postgresql.org/9.6/redhat/rhel-7-x86_64/postgresql96-libs-9.6.24-1PGDG.rhel7.x86_64.rpm https://yum.postgresql.org/9.6/redhat/rhel-7-x86_64/postgresql96-9.6.24-1PGDG.rhel7.x86_64.rpm https://yum.postgresql.org/9.6/redhat/rhel-7-x86_64/postgresql96-server-9.6.24-1PGDG.rhel7.x86_64.rpm
+yum install -y jq
 
-#yum install -y postgresql96 postgresql96-server
-#postgresql96-contrib postgresql96-libs -y
-
-#yum install -y postgresql96
-#yum install -y postgresql96-server
 pip install psycopg2==2.7.5 --ignore-installed
 
 echo 'LC_ALL="en_US.UTF-8"' >> /etc/locale.conf
@@ -251,3 +235,5 @@ curl -X PUT -u admin:admin "http://localhost:7180/api/v44/cm/allHosts/config?mes
 # Setup worldwide bank demo using script
 echo "Now setuping worldwide bank demo"
 curl -sSL https://raw.githubusercontent.com/abajwa-hw/masterclass/master/ranger-atlas/setup-dc-703.sh | sudo -E bash
+
+echo "The End"

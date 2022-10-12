@@ -207,4 +207,39 @@ sed -i "s/YourHostname/`hostname -f`/g" scripts/create_cluster_krb.py
 
 python scripts/create_cluster_krb.py $TEMPLATE
 
-echo "end"
+
+echo && echo -n "Stopping Cloudera Management Services..."
+curl -s -X POST -u admin:admin http://localhost:7180/api/v44/cm/service/commands/stop >/dev/null
+while [ "$(curl -s -X GET -u admin:admin "http://localhost:7180/api/v44/cm/service/commands" -H "accept: application/json"  | jq '.items | length')" != "0" ]; do
+  echo -n "."
+  sleep 10
+done
+
+
+echo && echo -n "Stopping cluster..."
+curl -s -X POST -u admin:admin http://localhost:7180/api/v44/clusters/WWBank/commands/stop >/dev/null
+while [ "$(curl -s -X GET -u admin:admin "http://localhost:7180/api/v44/clusters/WWBank/commands/" | jq '.items | length')" != "0" ]; do
+  echo -n "."
+  sleep 10
+done
+
+echo && echo -n "Deploying Kerberos client configuration..."
+curl -s -X POST -u admin:admin http://localhost:7180/api/v44/clusters/WWBank/commands/deployClusterClientConfig  -H "Content-Type: application/json" -d "{}" >/dev/null
+while [ "$(curl -s -X GET -u admin:admin "http://localhost:7180/api/v44/clusters/WWBank/commands/" | jq '.items | length')" != "0" ]; do
+  echo -n "."
+  sleep 10
+done
+
+echo && echo -n "Starting Cloudera Management Services..."
+curl -s -X POST -u admin:admin http://localhost:7180/api/v44/cm/service/commands/start >/dev/null
+while [ "$(curl -s -X GET -u admin:admin "http://localhost:7180/api/v44/cm/service/commands" -H "accept: application/json"  | jq '.items | length')" != "0" ]; do
+  echo -n "."
+  sleep 10
+done
+
+echo && echo -n "Starting cluster..."
+curl -s -X POST -u admin:admin http://localhost:7180/api/v44/clusters/WWBank/commands/start >/dev/null
+while [ "$(curl -s -X GET -u admin:admin "http://localhost:7180/api/v44/clusters/WWBank/commands/" | jq '.items | length')" != "0" ]; do
+  echo -n "."
+  sleep 10
+done

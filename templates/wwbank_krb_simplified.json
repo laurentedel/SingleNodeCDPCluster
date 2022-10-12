@@ -24,6 +24,8 @@
         "impala-IMPALAD-BASE",
         "impala-STATESTORE-BASE",
         "kafka-KAFKA_BROKER-BASE",
+        "livy-LIVY_SERVER-BASE",
+        "oozie-OOZIE_SERVER-BASE",
         "phoenix-PHOENIX_QUERY_SERVER-BASE",
         "ranger-RANGER_ADMIN-BASE",
         "ranger-RANGER_TAGSYNC-BASE",
@@ -35,6 +37,7 @@
         "yarn-JOBHISTORY-BASE",
         "yarn-NODEMANAGER-BASE",
         "yarn-RESOURCEMANAGER-BASE",
+        "zeppelin-ZEPPELIN_SERVER-BASE",
         "zookeeper-SERVER-BASE"
       ]
     }
@@ -71,6 +74,22 @@
       {
         "name": "hue-database_type",
         "value": "mysql"
+      },
+      {
+        "name": "oozie-OOZIE_SERVER-BASE-oozie_database_host",
+        "value": "YourHostname"
+      },
+      {
+        "name": "oozie-OOZIE_SERVER-BASE-oozie_database_password",
+        "value": "cloudera"
+      },
+      {
+        "name": "oozie-OOZIE_SERVER-BASE-oozie_database_type",
+        "value": "mysql"
+      },
+      {
+        "name": "oozie-OOZIE_SERVER-BASE-oozie_database_user",
+        "value": "oozie"
       },
       {
         "name": "ranger-rangeradmin_database_password",
@@ -198,6 +217,35 @@
       ]
     },
     {
+      "refName": "oozie",
+      "serviceType": "OOZIE",
+      "roleConfigGroups": [
+        {
+          "refName": "oozie-OOZIE_SERVER-BASE",
+          "roleType": "OOZIE_SERVER",
+          "configs": [
+            {
+              "name": "oozie_database_user",
+              "variable": "oozie-OOZIE_SERVER-BASE-oozie_database_user"
+            },
+            {
+              "name": "oozie_database_host",
+              "variable": "oozie-OOZIE_SERVER-BASE-oozie_database_host"
+            },
+            {
+              "name": "oozie_database_type",
+              "variable": "oozie-OOZIE_SERVER-BASE-oozie_database_type"
+            },
+            {
+              "name": "oozie_database_password",
+              "variable": "oozie-OOZIE_SERVER-BASE-oozie_database_password"
+            }
+          ],
+          "base": true
+        }
+      ]
+    },
+    {
       "refName": "ranger",
       "serviceType": "RANGER",
       "serviceConfigs": [
@@ -271,6 +319,46 @@
         {
           "refName": "tez-GATEWAY-BASE",
           "roleType": "GATEWAY",
+          "base": true
+        }
+      ]
+    },
+    {
+      "refName": "zeppelin",
+      "serviceType": "ZEPPELIN",
+      "serviceConfigs": [
+        {
+          "name": "zeppelin.authentication.method.kerberos",
+          "value": "true"
+        }
+      ],
+      "roleConfigGroups": [
+        {
+          "refName": "zeppelin-ZEPPELIN_SERVER-BASE",
+          "roleType": "ZEPPELIN_SERVER",
+          "configs": [
+            {
+              "name": "zeppelin.shiro.urls.block",
+              "value": "/api/version = anon\n/api/interpreter/setting/restart/** = authc\n/** = authc"
+            }
+          ],
+          "base": true
+        }
+      ]
+    },
+    {
+      "refName": "livy",
+      "serviceType": "LIVY",
+      "roleConfigGroups": [
+        {
+          "refName": "livy-LIVY_SERVER-BASE",
+          "roleType": "LIVY_SERVER",
+          "configs": [
+            {
+              "name": "log_directory_free_space_absolute_thresholds",
+              "value": "{\"critical\":\"never\",\"warning\":\"never\"}"
+            }
+          ],
           "base": true
         }
       ]

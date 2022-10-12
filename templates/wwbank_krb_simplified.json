@@ -120,6 +120,10 @@
       {
         "name": "ranger-rangerusersync_user_password",
         "value": "BadPass#1"
+      },
+      {
+        "name": "host_health_suppression_host_memory_swapping",
+        "value": "true"
       }
     ]
   },

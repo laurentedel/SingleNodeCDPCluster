@@ -27,6 +27,8 @@
         "livy-LIVY_SERVER-BASE",
         "oozie-OOZIE_SERVER-BASE",
         "phoenix-PHOENIX_QUERY_SERVER-BASE",
+        "queuemanager-QUEUEMANAGER_STORE-BASE", 
+        "queuemanager-QUEUEMANAGER_WEBAPP-BASE",
         "ranger-RANGER_ADMIN-BASE",
         "ranger-RANGER_TAGSYNC-BASE",
         "ranger-RANGER_USERSYNC-BASE",
@@ -667,6 +669,10 @@
         {
           "name": "hadoop_secure_web_ui",
           "value": "true"
+        },
+        {
+          "name" : "queuemanager_service",
+          "ref" : "queuemanager"
         }
       ],
       "roleConfigGroups": [
@@ -699,6 +705,23 @@
         }
       ]
     },
+    {
+        "refName" : "queuemanager",
+        "serviceType" : "QUEUEMANAGER",
+        "serviceConfigs" : [ {
+          "name" : "zookeeper_service",
+          "ref" : "zookeeper"
+        } ],
+        "roleConfigGroups" : [ {
+          "refName" : "queuemanager-QUEUEMANAGER_WEBAPP-BASE",
+          "roleType" : "QUEUEMANAGER_WEBAPP",
+          "base" : true
+        }, {
+          "refName" : "queuemanager-QUEUEMANAGER_STORE-BASE",
+          "roleType" : "QUEUEMANAGER_STORE",
+          "base" : true
+        } ]
+      },    
     {
       "refName": "hbase",
       "serviceType": "HBASE",

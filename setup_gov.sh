@@ -243,3 +243,11 @@ while [ "$(curl -s -X GET -u admin:admin "http://localhost:7180/api/v44/clusters
   echo -n "."
   sleep 10
 done
+
+echo "Suppressing swapping alert"
+curl -X PUT -u admin:admin "http://localhost:7180/api/v44/cm/allHosts/config?message=suppress%20swapping%20warning" -H "Content-Type: application/json" -d '{"items":[{"name":"host_health_suppression_host_memory_swapping","value":true}]}'
+
+
+# Setup worldwide bank demo using script
+echo "Now setuping worldwide bank demo"
+curl -sSL https://raw.githubusercontent.com/abajwa-hw/masterclass/master/ranger-atlas/setup-dc-703.sh | sudo -E bash

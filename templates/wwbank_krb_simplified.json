@@ -166,6 +166,10 @@
           "value": "true"
         },
         {
+      "name" : "service_config_suppression_server_count_validator",
+      "value" : "true"
+        }, 
+        {
           "name": "quorum_auth_enable_sasl",
           "value": "true"
         }
@@ -402,6 +406,10 @@
         {
           "name": "hbase_service",
           "ref": "hbase"
+        },
+        {
+          "name" : "service_config_suppression_hadoop_secure_web_ui",
+          "value" : "true"
         }
       ],
       "serviceType": "IMPALA"
@@ -413,6 +421,10 @@
         {
           "name": "hdfs_service",
           "ref": "hdfs"
+        },
+        {
+          "name" : "service_config_suppression_phoenix_hbase_regionserver_wal_codec_validator",
+          "value" : "true"
         },
         {
           "name": "zookeeper_service",
@@ -454,6 +466,18 @@
         {
           "name": "transaction.state.log.min.isr",
           "value": "1"
+        },
+        {
+          "name" : "service_config_suppression_kafka_broker_count_validator",
+          "value" : "true"
+        },
+        {
+          "name" : "service_config_suppression_offsets.topic.replication.factor",
+          "value" : "true"
+        },
+        {
+          "name" : "service_config_suppression_transaction.state.log.replication.factor",
+          "value" : "true"
         },
         {
           "name": "transaction.state.log.replication.factor",
@@ -512,6 +536,10 @@
           "variable": "hue-database_type"
         },
         {
+          "name" : "service_config_suppression_hue_hbase_thrift_server_validator",
+          "value" : "true"
+        },        
+        {
           "name": "database_password",
           "variable": "hue-database_password"
         },
@@ -554,6 +582,10 @@
           "name": "dfs_replication",
           "value": "1"
         },
+        {
+          "name" : "service_config_suppression_datanode_count_validator",
+          "value" : "true"
+        },        
         {
           "name": "core_site_safety_valve",
           "value": "<property><name>hadoop.proxyuser.zeppelin.groups</name><value>*</value></property><property><name>hadoop.proxyuser.zeppelin.hosts</name><value>*</value></property>"
@@ -675,6 +707,10 @@
           "name": "hbase_security_authorization",
           "value": "true"
         },
+        {
+          "name" : "service_config_suppression_hadoop_secure_web_ui",
+          "value" : "true"
+        },         
         {
           "name": "hbase_atlas_hook_enable",
           "value": "true"

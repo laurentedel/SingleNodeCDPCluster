@@ -43,8 +43,36 @@ git clone https://github.com/laurentedel/SingleNodeCDPCluster.git && cd SingleNo
 It will:
 * install a KDC
 * install CM packages with everything needeed (7mn)
-* deploy a CDP Private Cloud Base 7.1.7 stack
+* deploy a CDP Private Cloud Base 7.1.7 stack (15mn + 8mn restart)
+* deploy all the governance scripting (Hive tables, Ranger policies, etc) (15mn)
+
+Thus a total time around 45mn
 
 You can follow the deployment on Cloudera Manager http://ccycloud.[SHORT_NAME].root.hwx.site:7180 (credentials `admin/admin`)
 
+The different UIs (Ranger, Atlas) are usually `admin` or `administrator` with the password `BadPass#1`
 
+## Showtime
+
+You can make some basic requests in Hue or CLI to show some masking rules.
+
+For example
+```
+# kinit as joe_analyst, US group
+kinit -kt /etc/security/keytabs/joe_analyst.keytab joe_analyst/$(hostname -f)@CLOUDERA.COM
+# will show redacted address, password
+beeline --color -e "SELECT surname, streetaddress, country, age, password, nationalid, ccnumber, mrn, birthday FROM worldwidebank.us_customers limit 5;" 2>/dev/null
+
+# will show tag-based DENY (policy EXPIRES_ON), must see in Ranger audits to show
+# if you change the EXPIRES_ON value, it will eventually work
+beeline --color -e "select fed_tax from finance.tax_2015;" 2>/dev/null
+
+#tag based deny (DATA_QUALITY)
+beeline --color -e "select * from cost_savings.claim_savings limit 5;" 2>/dev/null
+
+#
+# Now the not redacted version from etl_user
+#
+kinit -kt /etc/security/keytabs/etl_user.keytab etl_user/$(hostname -f)@CLOUDERA.COM
+beeline --color -e "SELECT surname, streetaddress, country, age, password, nationalid, ccnumber, mrn, birthday FROM worldwidebank.us_customers limit 5;" 2>/dev/null
+```

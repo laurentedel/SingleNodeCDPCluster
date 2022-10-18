@@ -40,6 +40,11 @@ git clone https://github.com/laurentedel/SingleNodeCDPCluster.git && cd SingleNo
 ./setup_gov.sh gcp templates/wwbank_krb_simplified.json
 ```
 
-It starts installing a KDC, then a CDP Private Cloud Base 7.1.7 stack
+It will:
+* install a KDC
+* install CM packages with everything needeed (7mn)
+* deploy a CDP Private Cloud Base 7.1.7 stack
+
+You can follow the deployment on Cloudera Manager http://ccycloud.[SHORT_NAME].root.hwx.site:7180 (credentials `admin/admin`)
 
 

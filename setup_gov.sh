@@ -109,16 +109,10 @@ yum install -y java-1.8.0-openjdk-devel vim wget curl git bind-utils rng-tools
 yum install -y epel-release
 yum install -y python-pip
 
-cp /usr/lib/systemd/system/rngd.service /etc/systemd/system/
+cp -u /usr/lib/systemd/system/rngd.service /etc/systemd/system/
 systemctl daemon-reload
 systemctl start rngd
 systemctl enable rngd
-
-#echo "-- Installing requirements for Stream Messaging Manager"
-#yum install -y gcc-c++ make 
-#curl -sL https://rpm.nodesource.com/setup_10.x | sudo -E bash - 
-#yum install nodejs -y
-#npm install forever -g 
 
 # Check input parameters
 case "$1" in

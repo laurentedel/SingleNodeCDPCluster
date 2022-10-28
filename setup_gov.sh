@@ -237,7 +237,10 @@ sed -i "s#YourDockerDevice#$DOCKERDEVICE#g" $TEMPLATE
 
 sed -i "s/YourHostname/`hostname -f`/g" scripts/create_cluster_krb.py
 
+step "Deploying cluster - Approx 20mn"
 python scripts/create_cluster_krb.py $TEMPLATE
+
+step "Stop/Restart cluster for Kerberos configuration"
 
 echo && echo -n "Stopping Cloudera Management Services..."
 curl -s -X POST -u admin:admin http://localhost:7180/api/v44/cm/service/commands/stop >/dev/null
@@ -275,7 +278,7 @@ while [ "$(curl -s -X GET -u admin:admin "http://localhost:7180/api/v44/clusters
 done
 
 echo "Suppressing swapping alert"
-curl -X PUT -u admin:admin "http://localhost:7180/api/v44/cm/allHosts/config?message=suppress%20swapping%20warning" -H "Content-Type: application/json" -d '{"items":[{"name":"host_health_suppression_host_memory_swapping","value":true}]}'
+curl -X PUT -u admin:admin "http://localhost:7180/api/v44/cm/allHosts/config?message=suppress%20swapping%20warning" -H "Content-Type: application/json" -d '{"items":[{"name":"host_health_suppression_host_memory_swapping","value":true}]}' >/dev/null
 
 
 # Setup worldwide bank demo using script
@@ -312,9 +315,10 @@ cluster_name=$(curl -s -X GET -u admin:${cm_password} http://localhost:7180/api/
 echo "cluster name is: ${cluster_name}"
  
 cd /tmp
-git clone https://github.com/laurentedel/masterclass  
+git clone https://github.com/laurentedel/masterclass 2>/dev/null
 cd /tmp/masterclass/ranger-atlas/HortoniaMunichSetup
 chmod +x *.sh
+step "create OS users"
 ./04-create-os-users.sh  
 #bug?
 useradd rangerlookup
@@ -381,10 +385,10 @@ resource_policies=$(ls Ranger_Policies_ALL_*.json)
 tag_policies=$(ls Ranger_Policies_TAG_*.json)
 
 #import resource based policies
-${ranger_curl} -s -X POST -H "Content-Type: multipart/form-data" -H "Content-Type: application/json" -F "file=@${resource_policies}" -H "Accept: application/json"  -F "servicesMapJson=@servicemapping-all.json" "${ranger_url}/plugins/policies/importPoliciesFromFile?isOverride=true&serviceType=hdfs,tag,hbase,yarn,hive,knox,kafka,atlas,solr"
+${ranger_curl} -X POST -H "Content-Type: multipart/form-data" -H "Content-Type: application/json" -F "file=@${resource_policies}" -H "Accept: application/json"  -F "servicesMapJson=@servicemapping-all.json" "${ranger_url}/plugins/policies/importPoliciesFromFile?isOverride=true&serviceType=hdfs,tag,hbase,yarn,hive,knox,kafka,atlas,solr"
 
 #import tag based policies
-${ranger_curl} -s -X POST -H "Content-Type: multipart/form-data" -H "Content-Type: application/json" -F "file=@${tag_policies}" -H "Accept: application/json"  -F "servicesMapJson=@servicemapping-tag.json" "${ranger_url}/plugins/policies/importPoliciesFromFile?isOverride=true&serviceType=tag"
+${ranger_curl} -X POST -H "Content-Type: multipart/form-data" -H "Content-Type: application/json" -F "file=@${tag_policies}" -H "Accept: application/json"  -F "servicesMapJson=@servicemapping-tag.json" "${ranger_url}/plugins/policies/importPoliciesFromFile?isOverride=true&serviceType=tag"
 
 cd ../../HortoniaMunichSetup
 

@@ -8,6 +8,7 @@ import time
 import sys
 
 def wait(cmd, timeout=None):
+    print(cmd.name + " [")
     SYNCHRONOUS_COMMAND_ID = -1
     if cmd.id == SYNCHRONOUS_COMMAND_ID:
         return cmd
@@ -22,8 +23,11 @@ def wait(cmd, timeout=None):
         cmd_api_instance = cm_client.CommandsResourceApi(api_client)
         while True:
             cmd = cmd_api_instance.read_command(long(cmd.id))
-            pprint(cmd)
+            # pprint(cmd.name)
+            print('.',end='')
+             
             if not cmd.active:
+                print("] " + cmd.result_message)
                 return cmd
 
             if deadline is not None:

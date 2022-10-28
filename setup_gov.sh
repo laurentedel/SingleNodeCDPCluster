@@ -326,7 +326,7 @@ useradd rangerlookup
 step "Waiting 60s for Ranger usersync..."
 sleep 60
 
-ranger_curl="curl -s -o /dev/null -u admin:${ranger_password}"
+ranger_curl="curl -s -u admin:${ranger_password}"
 ranger_url="http://${ranger_host}:6080/service"
 
 

@@ -23,7 +23,7 @@ It gives the ability to demonstrate stuff like
 
 ## Deploy
 
-1. Instanciate a 32CPU/64GB RAM VM on [cloudcat](https://cloudcat.infra.cloudera.com) (you need to be on VPN)
+1. Instanciate a 32CPU/64GB RAM CentOS 7 VM on [cloudcat](https://cloudcat.infra.cloudera.com) (you need to be on VPN)
 ![image](https://user-images.githubusercontent.com/7782997/196439300-c4e66ae9-5cbc-4992-b45d-e0d86c0ce8e6.png)
 
 It takes less than 2 minutes.
@@ -37,7 +37,8 @@ ssh root@ccycloud.[SHORT_NAME].root.hwx.site
 ```
 yum install -y git 
 git clone https://github.com/laurentedel/SingleNodeCDPCluster.git && cd SingleNodeCDPCluster
-./setup_gov.sh gcp templates/wwbank_krb_simplified.json
+./setup_gov.sh templates/wwbank_krb_simplified.json
+
 ```
 
 It will:

@@ -278,7 +278,7 @@ while [ "$(curl -s -X GET -u admin:admin "http://localhost:7180/api/v44/clusters
 done
 
 echo "Suppressing swapping alert"
-curl -X PUT -u admin:admin "http://localhost:7180/api/v44/cm/allHosts/config?message=suppress%20swapping%20warning" -H "Content-Type: application/json" -d '{"items":[{"name":"host_health_suppression_host_memory_swapping","value":true}]}' >/dev/null
+curl -s -X PUT -u admin:admin "http://localhost:7180/api/v44/cm/allHosts/config?message=suppress%20swapping%20warning" -H "Content-Type: application/json" -d '{"items":[{"name":"host_health_suppression_host_memory_swapping","value":true}]}' >/dev/null
 
 
 # Setup worldwide bank demo using script

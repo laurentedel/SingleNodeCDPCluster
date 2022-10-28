@@ -8,7 +8,7 @@ import time
 import sys
 
 def wait(cmd, timeout=None):
-    print(cmd.name + " [")
+    print(cmd.name)
     SYNCHRONOUS_COMMAND_ID = -1
     if cmd.id == SYNCHRONOUS_COMMAND_ID:
         return cmd
@@ -27,7 +27,7 @@ def wait(cmd, timeout=None):
             print('.',end='')
              
             if not cmd.active:
-                print("] " + cmd.result_message)
+                print(" - " + cmd.result_message)
                 return cmd
 
             if deadline is not None:

@@ -116,8 +116,7 @@ systemctl daemon-reload
 systemctl start rngd
 # systemctl enable rngd
 
-TEMPLATE=$2
-DOCKERDEVICE=$3
+TEMPLATE=$1
 
 step "Configure networking"
 PUBLIC_IP=`curl -s icanhazip.com`

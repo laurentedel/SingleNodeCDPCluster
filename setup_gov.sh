@@ -488,7 +488,7 @@ if [ "${import_zeppelin_queries}" = true  ]; then
    #echo "curl -v --cookie $id -X POST http://$(hostname -f):8885/api/interpreter/setting -d @${intpr_dir}/jdbc.json"
    curl -s --cookie $id -X POST http://$(hostname -f):8885/api/interpreter/setting -d @${intpr_dir}/jdbc.json >/dev/null
    sleep 1
-   echo "listing all interpreters settings - jdbc and sh should now be included..."
+   #echo "listing all interpreters settings - jdbc and sh should now be included..."
    #echo "curl -v --cookie $id http://$(hostname -f):8885/api/interpreter/setting | python -m json.tool | grep id"
    #curl -s --cookie $id http://$(hostname -f):8885/api/interpreter/setting | python -m json.tool | grep id
    
@@ -544,7 +544,7 @@ curl -s -X POST -u admin:${cm_password} http://localhost:7180/api/${cm_api_ver}/
 sleep 10
 while ! $(nc -z localhost 9996); do echo -n "."; sleep 10; done
 
-
+echo
 step "Setup complete!"
 exit 0
 

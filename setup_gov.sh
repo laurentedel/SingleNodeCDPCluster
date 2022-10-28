@@ -93,13 +93,16 @@ kadmin.local -q "modprinc -maxrenewlife 7day krbtgt/${realm}@${realm}"
 
 start_dir=$PWD
 step "Configuring and optimizing the OS"
-echo never > /sys/kernel/mm/transparent_hugepage/enabled
-echo never > /sys/kernel/mm/transparent_hugepage/defrag
-echo "echo never > /sys/kernel/mm/transparent_hugepage/enabled" >> /etc/rc.d/rc.local
-echo "echo never > /sys/kernel/mm/transparent_hugepage/defrag" >> /etc/rc.d/rc.local
-# add tuned optimization https://www.cloudera.com/documentation/enterprise/6/6.2/topics/cdh_admin_performance.html
-echo  "vm.swappiness = 1" >> /etc/sysctl.conf
-sysctl vm.swappiness=1
+# only if we don't have a readonly fs
+if [ $(grep "[[:space:]]ro[[:space:],]" /proc/mounts | grep sysfs | grep -c "/sys") -eq 0 ]; then
+  echo never > /sys/kernel/mm/transparent_hugepage/enabled
+  echo never > /sys/kernel/mm/transparent_hugepage/defrag
+  echo "echo never > /sys/kernel/mm/transparent_hugepage/enabled" >> /etc/rc.d/rc.local
+  echo "echo never > /sys/kernel/mm/transparent_hugepage/defrag" >> /etc/rc.d/rc.local
+  # add tuned optimization https://www.cloudera.com/documentation/enterprise/6/6.2/topics/cdh_admin_performance.html
+  echo  "vm.swappiness = 1" >> /etc/sysctl.conf
+  sysctl vm.swappiness=1
+fi
 timedatectl set-timezone UTC
 
 yum install -y -q chrony
@@ -544,6 +547,11 @@ sleep 10
 while ! $(nc -z localhost 9996); do echo -n "."; sleep 10; done
 
 echo
+
+((sec=SECONDS%60, SECONDS/=60, min=SECONDS%60))
+printf "\360\237\225\223 Total time: ${GREEN}%02d'%02d\"" $min $sec
+printf "${NC}\n"
+
 step "Setup complete!"
 exit 0
 

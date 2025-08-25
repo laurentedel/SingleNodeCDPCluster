@@ -179,8 +179,7 @@ echo 'LC_ALL="en_US.UTF-8"' >> /etc/locale.conf
 
 step "Install and configure PostgreSQL"
 ## PostgreSQL see: https://www.postgresql.org/download/linux/redhat/
-yum install -y https://yum.postgresql.org/9.6/redhat/rhel-7-x86_64/postgresql96-libs-9.6.24-1PGDG.rhel7.x86_64.rpm https://yum.postgresql.org/9.6/redhat/rhel-7-x86_64/postgresql96-9.6.24-1PGDG.rhel7.x86_64.rpm https://yum.postgresql.org/9.6/redhat/rhel-7-x86_64/postgresql96-server-9.6.24-1PGDG.rhel7.x86_64.rpm
-/usr/pgsql-9.6/bin/postgresql96-setup initdb
+yum localinstall -y bin/*.rpm
 cat conf/pg_hba.conf > /var/lib/pgsql/9.6/data/pg_hba.conf
 cat conf/postgresql.conf > /var/lib/pgsql/9.6/data/postgresql.conf
 
@@ -225,6 +224,7 @@ while [ `curl -s -X GET -u "admin:admin"  http://localhost:7180/api/version >/de
   echo -n "."; sleep 5;
 done
 
+echo
 step "CM started, automate using the CM API"
 
 wget -q https://bootstrap.pypa.io/pip/2.7/get-pip.py
@@ -378,7 +378,7 @@ ${ranger_curl} -s -o /dev/null -i \
   -d @hive.json ${ranger_url}/public/v2/api/servicedef/name/hive
 sleep 10
 
-
+echo 
 #Import Ranger policies
 step "Importing Ranger policies..."
 cd ../Scripts/cdp-policies
@@ -508,6 +508,7 @@ sed -i.bak "s/21000/31000/g" env_atlas.sh
 sed -i.bak "s/localhost/${atlas_host}/g" env_atlas.sh
 sed -i.bak "s/ATLAS_PASS=admin/ATLAS_PASS=${atlas_pass}/g" env_atlas.sh
 
+echo
 step "import Atlas tags"
 ./01-atlas-import-classification.sh
 
@@ -541,7 +542,8 @@ then
     chown nifi:nifi /tmp/nifi.keytab
 fi
 
-echo && echo -n "restarting CMS service..."
+echo 
+step "restarting CMS service..."
 curl -s -X POST -u admin:${cm_password} http://localhost:7180/api/${cm_api_ver}/cm/service/commands/restart >/dev/null
 sleep 10
 while ! $(nc -z localhost 9996); do echo -n "."; sleep 10; done
@@ -553,6 +555,8 @@ printf "\360\237\225\223 Total time: ${GREEN}%02d'%02d\"" $min $sec
 printf "${NC}\n"
 
 step "Setup complete!"
+
+echo && echo "You can access Cloudera Manager on http://$(hostname):7180"
 exit 0
 
 -------------------------

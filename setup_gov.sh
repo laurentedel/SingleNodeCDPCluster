@@ -15,6 +15,7 @@ export domain=${domain:-cloudera.com}
 export kdcpassword=${kdcpassword:-BadPass#1}
 TEMPLATE=$1
 PUBLIC_IP=`curl -s icanhazip.com`
+start_dir=$PWD
 
 set -e
 sudo yum -y -q install krb5-server krb5-libs krb5-workstation
@@ -93,7 +94,6 @@ kadmin.local -q "modprinc -maxrenewlife 7day krbtgt/${realm}@${realm}"
 #echo kadmin -p admin/admin -w $kdcpassword -r $realm -q \"get_principal admin/admin\"
 #echo kadmin -p cloudera-scm/admin -w $kdcpassword -r $realm -q \"get_principal cloudera-scm/admin\"
 
-start_dir=$PWD
 step "Configuring and optimizing the OS"
 # only if we don't have a readonly fs
 if [ $(grep "[[:space:]]ro[[:space:],]" /proc/mounts | grep sysfs | grep -c "/sys") -eq 0 ]; then
@@ -140,12 +140,16 @@ wget -q https://archive.cloudera.com/cm7/7.4.4/redhat8/yum/cloudera-manager-tria
 curl -LsS https://downloads.mariadb.com/MariaDB/mariadb_repo_setup | bash -s -- --mariadb-server-version="mariadb-10.4"
 #yum install MariaDB-server MariaDB-client MariaDB-common MariaDB-devel mariadb-libs
 
-yum clean all
-rm -rf /var/cache/yum/
+#yum clean all
+#rm -rf /var/cache/yum/
 #yum repolist
 
 ## CM
-yum install -y -d 2 cloudera-manager-agent cloudera-manager-daemons cloudera-manager-server MariaDB-server MariaDB-client
+yum install -y -d 2 cloudera-manager-agent cloudera-manager-daemons cloudera-manager-server MariaDB-server MariaDB-client MariaDB-common MariaDB-devel mariadb-libs
+sed -i '/st_mysql_options options;/a unsigned int reconnect;' /usr/include/mysql/mysql.h
+pip install MySQL-python --force-reinstall --ignore-installed
+chmod -R 755 /usr/lib64/python2.7/site-packages/MySQLdb /usr/lib64/python2.7/site-packages/MySQL_python*; chmod 755 /usr/lib64/python2.7/site-packages/_mysql*
+
 
 ## MariaDB
 cat conf/mariadb.config > /etc/my.cnf
@@ -214,7 +218,7 @@ ssh-keyscan -H `hostname` >> ~/.ssh/known_hosts
 systemctl restart sshd
 
 step "Start CM, it takes about 2 minutes to be ready"
-systemctl start cloudera-scm-server
+systemctl start cloudera-scm-server cloudera-scm-agent
 
 while [ `curl -s -X GET -u "admin:admin"  http://localhost:7180/api/version >/dev/null; echo $?` != 0 ]; do
   echo -n "."; sleep 5;
@@ -237,6 +241,8 @@ sed -i "s/YourHostname/`hostname -f`/g" scripts/create_cluster_krb.py
 
 step "Deploying cluster - Approx 20mn"
 python scripts/create_cluster_krb.py $TEMPLATE
+
+######### A FAIRE                  cp /usr/lib64/python2.7/site-packages/_mysql.so /opt/cloudera/parcels/CDH/lib/hue/build/env/lib/python2.7/site-packages/MySQL_python-1.2.5-py2.7-linux-x86_64.egg/
 
 step "Stop/Restart cluster for Kerberos configuration"
 

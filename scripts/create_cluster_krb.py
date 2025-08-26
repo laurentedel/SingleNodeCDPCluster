@@ -1,10 +1,11 @@
+# -*- coding: utf-8 -*-
 from __future__ import print_function
+import time
 import cm_client
 from cm_client.rest import ApiException
 from collections import namedtuple
 from pprint import pprint
 import json
-import time
 import sys
 
 def wait(cmd, timeout=None):
@@ -113,4 +114,38 @@ with open(sys.argv[1]) as f:
 Response = namedtuple("Response", "data")
 dst_cluster_template=api_client.deserialize(response=Response(json_str),response_type=cm_client.ApiClusterTemplate)
 cmd = cm_api.import_cluster_template(add_repositories=True, body=dst_cluster_template)
+
+print("Started ImportClusterTemplate, command ID: %s\n" % cmd.id)
+
+def print_step_status(children):
+    print("---- Step Status ----")
+    for child in children:
+        if child.success:
+            status = "[✔]"
+        elif child.active:
+            status = "[~]"
+        else:
+            status = "[ ]"
+        print("%s %s" % (status, child.name))
+    print("---------------------\n")
+
+# Poll until command finishes
+while cmd.active:
+    cmd = cm_api.get_command(cmd.id)  # refresh the status
+    print_step_status(cmd.children)
+    time.sleep(5)
+
+# Final status
+print_step_status(cmd.children)
+if cmd.success:
+    print("✅ ImportClusterTemplate completed successfully!")
+else:
+    print("❌ ImportClusterTemplate failed.")
+    # Optional: show which steps failed
+    for child in cmd.children:
+        if not child.success:
+            print("❌ Step '%s' failed." % child.name)
+            if hasattr(child, 'resultMessage') and child.resultMessage:
+                print("   Reason: %s" % child.resultMessage)
+
 wait(cmd)

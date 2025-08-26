@@ -137,7 +137,7 @@ step "Installing Cloudera Manager and MariaDB"
 wget -q https://archive.cloudera.com/cm7/7.4.4/redhat8/yum/cloudera-manager-trial.repo -P /etc/yum.repos.d/
 
 ## MariaDB 10.1
-curl -LsS https://downloads.mariadb.com/MariaDB/mariadb_repo_setup | bash -s – --mariadb-server-version="mariadb-10.4"
+curl -LsS https://downloads.mariadb.com/MariaDB/mariadb_repo_setup | bash -s -- --mariadb-server-version="mariadb-10.4"
 #yum install MariaDB-server MariaDB-client MariaDB-common MariaDB-devel mariadb-libs
 
 yum clean all

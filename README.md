@@ -36,7 +36,7 @@ ssh root@ccycloud.[SHORT_NAME].root.hwx.site
 3. Install the stuff
 ```
 yum install -y git 
-git clone https://github.com/laurentedel/SingleNodeCDPCluster.git && cd SingleNodeCDPCluster
+git clone -b rhel8 https://github.com/laurentedel/SingleNodeCDPCluster.git && cd SingleNodeCDPCluster
 ./setup_gov.sh templates/wwbank_krb_simplified.json
 
 ```

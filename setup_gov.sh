@@ -13,9 +13,11 @@ export host=$(hostname -f)
 export realm=${realm:-CLOUDERA.COM}
 export domain=${domain:-cloudera.com}
 export kdcpassword=${kdcpassword:-BadPass#1}
+TEMPLATE=$1
+PUBLIC_IP=`curl -s icanhazip.com`
 
 set -e
-sudo yum -y -q install krb5-server krb5-libs krb5-auth-dialog krb5-workstation
+sudo yum -y -q install krb5-server krb5-libs krb5-workstation
 
 sudo tee /etc/krb5.conf > /dev/null << EOF
 [logging]
@@ -112,14 +114,12 @@ systemctl enable chronyd
 step "Installing Java OpenJDK8 and other tools"
 yum install -y -q java-1.8.0-openjdk-devel vim wget curl git bind-utils rng-tools
 yum install -y -q epel-release
-yum install -y -q python-pip jq
+yum install -y -q jq
 
 cp -f /usr/lib/systemd/system/rngd.service /etc/systemd/system/
 systemctl daemon-reload
 systemctl start rngd
 # systemctl enable rngd
-
-TEMPLATE=$1
 
 step "Configure networking"
 PUBLIC_IP=`curl -s icanhazip.com`
@@ -134,16 +134,11 @@ echo "`hostname -I` `hostname`" >> /etc/hosts
 step "Installing Cloudera Manager and MariaDB"
 
 ## CM 7
-wget -q https://archive.cloudera.com/cm7/7.4.4/redhat7/yum/cloudera-manager-trial.repo -P /etc/yum.repos.d/
+wget -q https://archive.cloudera.com/cm7/7.4.4/redhat8/yum/cloudera-manager-trial.repo -P /etc/yum.repos.d/
 
 ## MariaDB 10.1
-cat - >/etc/yum.repos.d/MariaDB.repo <<EOF
-[mariadb]
-name = MariaDB
-baseurl = https://archive.mariadb.org/mariadb-10.1/yum/centos7-amd64/
-gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
-gpgcheck=0
-EOF
+curl -LsS https://downloads.mariadb.com/MariaDB/mariadb_repo_setup | bash -s – --mariadb-server-version="mariadb-10.4"
+#yum install MariaDB-server MariaDB-client MariaDB-common MariaDB-devel mariadb-libs
 
 yum clean all
 rm -rf /var/cache/yum/
@@ -180,6 +175,7 @@ echo 'LC_ALL="en_US.UTF-8"' >> /etc/locale.conf
 step "Install and configure PostgreSQL"
 ## PostgreSQL see: https://www.postgresql.org/download/linux/redhat/
 yum localinstall -y bin/*.rpm
+/usr/pgsql-9.6/bin/postgresql96-setup initdb
 cat conf/pg_hba.conf > /var/lib/pgsql/9.6/data/pg_hba.conf
 cat conf/postgresql.conf > /var/lib/pgsql/9.6/data/postgresql.conf
 

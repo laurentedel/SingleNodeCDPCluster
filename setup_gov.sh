@@ -242,7 +242,7 @@ sed -i "s/YourHostname/`hostname -f`/g" scripts/create_cluster_krb.py
 step "Deploying cluster - Approx 20mn"
 python scripts/create_cluster_krb.py $TEMPLATE
 
-######### A FAIRE                  cp /usr/lib64/python2.7/site-packages/_mysql.so /opt/cloudera/parcels/CDH/lib/hue/build/env/lib/python2.7/site-packages/MySQL_python-1.2.5-py2.7-linux-x86_64.egg/
+cp /usr/lib64/python2.7/site-packages/_mysql.so /opt/cloudera/parcels/CDH/lib/hue/build/env/lib/python2.7/site-packages/MySQL_python-1.2.5-py2.7-linux-x86_64.egg/
 
 step "Stop/Restart cluster for Kerberos configuration"
 

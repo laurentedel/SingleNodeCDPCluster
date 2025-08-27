@@ -7,6 +7,14 @@ from collections import namedtuple
 from pprint import pprint
 import json
 import sys
+import subprocess
+
+class Colors:
+    GREEN = "\033[32m"
+    YELLOW = "\033[33m"
+    GRAY = "\033[90m"
+    RED = "\033[31m"
+    RESET = "\033[0m"
 
 def wait(cmd, timeout=None):
     print(cmd.name)
@@ -116,33 +124,83 @@ dst_cluster_template=api_client.deserialize(response=Response(json_str),response
 cmd = cm_api.import_cluster_template(add_repositories=True, body=dst_cluster_template)
 
 print("Started ImportClusterTemplate, command ID: %s\n" % cmd.id)
+last_line_count = 0
 
 def print_step_status(children):
-    print("---- Step Status ----")
-    for child in children:
+    global last_line_count
+
+    # Move the cursor up and clear previous output
+    if last_line_count > 0:
+        sys.stdout.write("\033[F\033[K" * last_line_count)  # F = move cursor up, K = clear line
+        sys.stdout.flush()
+
+    lines = []
+    for child in children.items:
         if child.success:
-            status = "[✔]"
+            status = Colors.GREEN + "[✔]" + Colors.RESET
         elif child.active:
-            status = "[~]"
+            status = Colors.YELLOW + "[~]" + Colors.RESET
         else:
-            status = "[ ]"
+            status = Colors.GRAY + "[ ]" + Colors.RESET
+        lines.append("%s %s" % (status, child.name))
+
+    # Print all lines and update the count
+    for line in lines:
+        print(line)
+    last_line_count = len(lines)
+
+def print_final_status(children):
+    """Prints final summary without in-place formatting."""
+    print("\nFinal step status:\n")
+    for child in children.items:
+        if child.success:
+            status = Colors.GREEN + "[✔]" + Colors.RESET
+        else:
+            status = Colors.RED + "[❌]" + Colors.RESET
         print("%s %s" % (status, child.name))
-    print("---------------------\n")
+
+deploy_parcels_completed = False  # Flag to ensure it runs only once
 
 # Poll until command finishes
+cmd_api_instance = cm_client.CommandsResourceApi(api_client)
 while cmd.active:
-    cmd = cm_api.get_command(cmd.id)  # refresh the status
+    #cmd = cm_api.get_command(cmd.id)  # refresh the status
+    cmd = cmd_api_instance.read_command(cmd.id)
+
+    # custom action for Hue
+    # Detect when "Deploy Parcels" completes
+    for child in cmd.children.items:
+        if child.name == "DeployParcels" and child.success and not deploy_parcels_completed:
+            deploy_parcels_completed = True
+            print("\n🚀 'Deploy Parcels' step completed. Running Hue custom action...\n")
+            # === custom action for Hue to start: https://docs.cloudera.com/cdp-private-cloud-base/7.3.1/administering-hue/topics/hue-install-configure-mariadb-rhel8.html ===
+            try:
+                subprocess.check_call([
+                    "cp", "-f",
+                    "/usr/lib64/python2.7/site-packages/_mysql.so",
+                    "/opt/cloudera/parcels/CDH/lib/hue/build/env/lib/python2.7/site-packages/MySQL_python-1.2.5-py2.7-linux-x86_64.egg/"
+                ])
+                print("✅ _mysql.so successfully copied.")
+            except subprocess.CalledProcessError as e:
+                print("❌ Failed to copy _mysql.so: %s" % e)
+            # cp -f /usr/lib64/python2.7/site-packages/_mysql.so /opt/cloudera/parcels/CDH/lib/hue/build/env/lib/python2.7/site-packages/MySQL_python-1.2.5-py2.7-linux-x86_64.egg/
+    
+    
     print_step_status(cmd.children)
     time.sleep(5)
 
 # Final status
 print_step_status(cmd.children)
+
+# === Final summary ===
+print_final_status(cmd.children)
+
 if cmd.success:
     print("✅ ImportClusterTemplate completed successfully!")
 else:
     print("❌ ImportClusterTemplate failed.")
     # Optional: show which steps failed
-    for child in cmd.children:
+    for child in cmd.children.items:
         if not child.success:
             print("❌ Step '%s' failed." % child.name)
             if hasattr(child, 'resultMessage') and child.resultMessage:
